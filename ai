@@ -1,0 +1,173 @@
+import React, { useState } from "react";
+import "./App.css";
+
+function App() {
+
+// Function to fetch questions from Firestore and display results in the terminal
+ const fetchQuestionsFromFirebase = async () => { const db = firebase.firestore(); 
+  const questionsRef = db.collection('questions');
+   try { const snapshot = await questionsRef.get(); const questions = []; snapshot.forEach((doc) => { const questionData = doc.data(); 
+// Extract the question and options from the document data 
+const question = { 
+  id: doc.id, 
+  question: questionData.question, 
+  options: [ 
+    questionData.option1, 
+    questionData.option2, 
+    questionData.option3, 
+    questionData.option4, 
+  ], 
+}; 
+  // Add the question to the array 
+    questions.push(question); 
+}); 
+
+  
+    // Log the questions to the console 
+    questions.forEach((question) => { 
+      console.log('Question:', question.question);
+       console.log('Options:', question.options.join(', ')); 
+       console.log('------------------------'); 
+      });
+      
+      return questions; 
+    } catch (error) { 
+      console.error('Error fetching questions:', error); 
+      return []; 
+    } 
+  }; 
+
+  // Call the function to fetch questions and display results in the terminal
+   fetchQuestionsFromFirebase()
+    .then((questions) => { 
+      // Additional processing or actions with the questions can be done here 
+    }) 
+    .catch((error) => { 
+      // Handle any errors that occurred
+       console.error('Error fetching questions:', error); 
+      });
+  
+  // Properties
+  const [showResults, setShowResults] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+
+  const questions = [
+    {
+      text: "What are your interests and passions?",
+      options: [
+        { id: 0, text: "Art and design", isCorrect: true },
+        { id: 1, text: "Science and technology", isCorrect: true },
+        { id: 2, text: "Literature and writing", isCorrect: true },
+        { id: 3, text: "Social sciences and humanities", isCorrect: true },
+      ],
+    },
+    {
+      text: "What is your preferred mode of learning?",
+      options: [
+        { id: 0, text: "In-person lectures", isCorrect: true },
+        { id: 1, text: "Online lectures", isCorrect: true },
+        { id: 2, text: "Hybrid", isCorrect: true },
+        { id: 3, text: "Dont have a preference", isCorrect: true },
+      ],
+    },
+    {
+      text: "What type of course format do you prefer for a class related to your hobbies and interests?",
+      options: [
+        { id: 0, text: "Lecture-style with a lot of information", isCorrect: true },
+        { id: 1, text: "Hands-on activities and demonstrations", isCorrect: true },
+        { id: 2, text: "Group dicussions and projects", isCorrect: true },
+        { id: 3, text: "Online courses or websites", isCorrect: true },
+      ],
+    },
+    {
+      text: "What is your ultimate goal for taking this course related to your interest or hobbies ?",
+      options: [
+        { id: 0, text: "To have fun and meet new people", isCorrect: true },
+        { id: 1, text: "To gain a new skill or improve an existing one", isCorrect: true },
+        { id: 2, text: "To deepen you undToerstanding of the subject", isCorrect: true },
+        { id: 3, text: "To potentially turn your hobby or interest into a career", isCorrect: true },
+      ],
+    },
+    {
+      text: "How much time are you willing to dedicate to this course each week?",
+      options: [
+        { id: 0, text: "Less than 5 hours", isCorrect: true },
+        { id: 1, text: "5-10 hours", isCorrect: true },
+        { id: 2, text: "10-15 hours", isCorrect: true },
+        { id: 3, text: "More than 15 hours", isCorrect: true },
+      ],
+    },
+  ];
+
+  // Helper Functions
+
+  /* A possible answer was clicked */
+  const optionClicked = (isCorrect) => {
+    // Increment the score
+    if (isCorrect) {
+      setScore(score + 1);
+    }
+
+    if (currentQuestion + 1 < questions.length) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      setShowResults(true);
+    }
+  };
+
+  /* Resets the game back to default */
+  const restartGame = () => {
+    setScore(0);
+    setCurrentQuestion(0);
+    setShowResults(false);
+  };
+
+  return (
+    <div className="App">
+      {/* 1. Header  */}
+      <h1>Course Quiz 🇺🇸</h1>
+
+      {/* 2. Current Qustion score  */}
+      <h2>Score: {score}</h2>
+
+      {/* 3. Show results or show the question game  */}
+      {showResults ? (
+        /* 4. Final Results */
+        <div className="final-results">
+          <h1>Final Results</h1>
+          <h2>
+            {score} out of {questions.length} correct - (
+            {(score / questions.length) * 100}%)
+          </h2>
+          <button onClick={() => restartGame()}>Restart game</button>
+        </div>
+      ) : (
+        /* 5. Question Card  */
+        <div className="question-card">
+          {/* Current Question  */}
+          <h2>
+            Question: {currentQuestion + 1} out of {questions.length}
+          </h2>
+          <h3 className="question-text">{questions[currentQuestion].text}</h3>
+
+          {/* List of possible answers  */}
+          <ul>
+            {questions[currentQuestion].options.map((option) => {
+              return (
+                <li
+                  key={option.id}
+                  onClick={() => optionClicked(option.isCorrect)}
+                >
+                  {option.text}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
